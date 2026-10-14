@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengembaraan Kemesraan - Permainan Kuiz Tahun 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background: linear-gradient(135deg, #a8ede} 0%, #fed6e3 100%);
+            min-height: 100vh;
+        }
+        .bouncing {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-2xl bg-white shadow-2xl rounded-3xl overflow-hidden border-4 border-indigo-400">
+        <!-- Header / Status Bar -->
+        <div id="status-bar" class="bg-indigo-600 text-white p-4 flex justify-between items-center text-lg font-bold shadow-md hidden">
+            <div class="flex items-center space-x-2">
+                <span>❤️ Nyawa: <span id="lives-display" class="text-pink-300">3</span></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span>⭐ Markah: <span id="score-display" class="text-yellow-300">0</span></span>
+                <span>🚩 Tahap: <span id="level-display" class="text-green-300">1</span>/4</span>
+            </div>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="p-6 sm:p-8">
+            
+            <!-- SCREEN 1: Welcome / Start Screen -->
+            <div id="screen-welcome" class="text-center space-y-6">
+                <div class="bouncing text-6xl">🌟</div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-indigo-700">Pengembaraan Kemesraan</h1>
+                <p class="text-gray-600 text-lg">
+                    Selamat datang, wira Tahun 4! Jom pelajari erti <strong>kesederhanaan dalam menjalin kemesraan</strong> bersama rakan-rakan melalui kisah pengembaraan yang menarik ini.
+                </p>
+                <div class="bg-indigo-50 p-4 rounded-2xl text-left border border-indigo-200">
+                    <h3 class="font-bold text-indigo-800 mb-2">Panduan Permainan:</h3>
+                    <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm sm:text-base">
+                        <li>Terdapat <strong>4 Tahap</strong> jalan cerita yang perlu diselesaikan.</li>
+                        <li>Setiap tahap mempunyai <strong>3 soalan</strong> (10 markah setiap satu).</li>
+                        <li>Anda mempunyai <strong>3 Nyawa</strong> ❤️ sahaja. Jangan sampai habis!</li>
+                        <li>Kumpul <strong>Badge Unik</strong> 🏅 di setiap akhir tahap!</li>
+                    </ul>
+                </div>
+                <button onclick="startGame()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg text-xl transition transform active:scale-95">
+                    Mula Pengembaraan 🚀
+                </button>
+            </div>
+
+            <!-- SCREEN 2: Story Intro Screen -->
+            <div id="screen-story" class="text-center space-y-6 hidden">
+                <div id="story-icon" class="text-6xl bouncing">🏡</div>
+                <h2 id="story-title" class="text-2xl font-bold text-indigo-700">Tahap 1: Persiapan Rumah Terbuka</h2>
+                <div class="bg-indigo-50 p-6 rounded-2xl text-gray-700 text-lg leading-relaxed border border-indigo-200" id="story-text">
+                    Cerita tahap 1...
+                </div>
+                <button onclick="startLevelQuestions()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-2xl shadow-lg text-xl transition transform active:scale-95">
+                    Teruskan ke Cabaran ⚔️
+                </button>
+            </div>
+
+            <!-- SCREEN 3: Quiz Screen -->
+            <div id="screen-quiz" class="space-y-6 hidden">
+                <div class="flex justify-between items-center text-sm font-semibold text-gray-500">
+                    <span id="question-progress">Soalan 1 dari 3</span>
+                    <span id="question-tag" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">Nilai Murni</span>
+                </div>
+                <h3 id="question-text" class="text-xl sm:text-2xl font-bold text-gray-800">
+                    Soalan akan dipaparkan di sini?
+                </h3>
+                <div id="options-container" class="space-y-3">
+                    <!-- Options injected via JS -->
+                </div>
+                <div id="feedback-container" class="hidden p-4 rounded-2xl text-center font-bold text-lg"></div>
+                <button id="next-btn" onclick="nextQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl shadow-lg text-lg hidden transition">
+                    Seterusnya ➡️
+                </button>
+            </div>
+
+            <!-- SCREEN 4: Level Badge / Reward Screen -->
+            <div id="screen-reward" class="text-center space-y-6 hidden">
+                <div class="text-6xl bouncing">🏅</div>
+                <h2 class="text-3xl font-bold text-green-600">Tahap Selesai!</h2>
+                <p id="reward-message" class="text-gray-600 text-lg">Tahniah! Anda telah berjaya mengharungi cabaran tahap ini dan memperoleh badge istimewa.</p>
+                <div class="bg-yellow-50 border-2 border-yellow-300 p-6 rounded-2xl inline-block shadow-inner">
+                    <div id="badge-icon" class="text-5xl mb-2">🛡️</div>
+                    <h4 id="badge-name" class="font-bold text-yellow-800 text-xl">Badge Kemesraan</h4>
+                </div>
+                <div>
+                    <button onclick="proceedNextLevel()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg text-xl transition">
+                        Tahap Seterusnya 🌟
+                    </button>
+                </div>
+            </div>
+
+            <!-- SCREEN 5: Game Over Screen -->
+            <div id="screen-gameover" class="text-center space-y-6 hidden">
+                <div class="text-6xl">💔</div>
+                <h2 class="text-3xl font-bold text-red-600">Permainan Tamat</h2>
+                <p class="text-gray-600 text-lg">Nyawa anda telah habis! Jangan putus asa, mari cuba sekali lagi untuk menjadi wira kesederhanaan.</p>
+                <button onclick="resetGame()" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-2xl shadow-lg text-xl transition">
+                    Cuba Sekali Lagi 🔄
+                </button>
+            </div>
+
+            <!-- SCREEN 6: Victory Screen -->
+            <div id="screen-victory" class="text-center space-y-6 hidden">
+                <div class="text-6xl bouncing">👑</div>
+                <h2 class="text-3xl font-bold text-purple-600">Tahniah, Wira Cemerlang!</h2>
+                <p class="text-gray-700 text-lg">Anda telah berjaya menamatkan kesemua 4 tahap pengembaraan dan mengumpul kesemua badge kesederhanaan dalam menjalin kemesraan!</p>
+                <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200">
+                    <p class="text-xl font-bold text-purple-800">Jumlah Markah Akhir: <span id="final-score" class="text-yellow-600">120</span>/120</p>
+                </div>
+                <button onclick="resetGame()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-2xl shadow-lg text-xl transition">
+                    Main Semula 🌟
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const gameData = [
+            {
+                level: 1,
+                title: "Tahap 1: Persiapan Rumah Terbuka",
+                icon: "🏡",
+                story: "Kamu dan keluarga sedang membuat persiapan menyambut jiran tetangga sempena perayaan. Ayah mengajak kamu menyediakan hidangan yang ringkas tetapi bermakna. Bagaimana kamu mengamalkan kesederhanaan?",
+                badge: { name: "Badge Jiran Prihatin", icon: "🤝" },
+                questions: [
+                    {
+                        question: "Apakah maksud mengamalkan kesederhanaan dalam menyediakan hidangan untuk jiran tetangga?",
+                        options: [
+                            "Menyediakan makanan yang terlalu mewah dan mahal semata-mata untuk menunjuk-nunjuk.",
+                            "Menyediakan hidangan yang cukup dan sederhana tanpa membazir.",
+                            "Meminta bantuan orang lain membayar semua perbelanjaan makanan.",
+                            "Tidak perlu menyediakan sebarang makanan langsung."
+                        ],
+                        correct: 1,
+                        rationale: "Kesederhanaan bermaksud tidak berlebih-lebih dan mengelakkan pembaziran dalam penyediaan makanan.",
+                        tag: "Definisi & Konsep"
+                    },
+                    {
+                        question: "Mengapakah kita perlu bersikap sederhana ketika menjemput rakan-rakan pelbagai kaum ke rumah?",
+                        options: [
+                            "Supaya kita tidak terbeban dari segi kewangan dan tetamu selesa dengan suasananya.",
+                            "Agar tetamu berasa malu dengan rumah kita.",
+                            "Supaya kita boleh meminta hadiah yang mahal.",
+                            "Supaya tetamu cepat pulang."
+                        ],
+                        correct: 0,
+                        rationale: "Sikap bersederhana mengelakkan pembaziran dan perbelanjaan berlebihan di samping mengeratkan hubungan.",
+                        tag: "Amalan Murni"
+                    },
+                    {
+                        question: "Apakah tindakan yang betul apabila menerima hadiah kecil yang sederhana daripada jiran baru?",
+                        options: [
+                            "Menolak hadiah tersebut kerana nilai harganya terlalu murah.",
+                            "Menerimanya dengan senyuman dan mengucapkan terima kasih.",
+                            "Membuang hadiah itu di hadapan mereka.",
+                            "Meminta hadiah yang lebih besar nilainya."
+                        ],
+                        correct: 1,
+                        rationale: "Menerima pemberian dengan senyuman menunjukkan adab sopan dan menghargai usaha jiran.",
+                        tag: "Adab Bersosial"
+                    }
+                ]
+            },
+            {
+                level: 2,
+                title: "Tahap 2: Aktiviti Gotong-Royong Taman",
+                icon: "🧹",
+                story: "Penduduk taman perumahan mengadakan gotong-royong membersihkan taman permainan. Kamu ditugaskan membawa peralatan. Mari buktikan kefahamanmu tentang adab berkawan dan kesederhanaan.",
+                badge: { name: "Badge Wira Taman", icon: "🌱" },
+                questions: [
+                    {
+                        question: "Semasa gotong-royong, rakan kamu Amin membawa air minuman yang sederhana untuk dikongsi. Apakah reaksi yang patut kamu tunjukkan?",
+                        options: [
+                            "Memuji usahanya dan minum bersama-sama dengan rasa gembira.",
+                            "Mengejek air minumannya yang biasa.",
+                            "Menyembunyikan air tersebut supaya orang lain tidak tahu.",
+                            "Meminta Amin beli air yang lebih mahal."
+                        ],
+                        correct: 0,
+                        rationale: "Menghargai pemberian rakan tanpa memandang kepada kemewahan mengeratkan lagi perpaduan dan kemesraan.",
+                        tag: "Hubungan Rakan"
+                    },
+                    {
+                        question: "Bagaimanakah cara berpakaian yang sesuai dan menunjukkan kesederhanaan semasa menyertai aktiviti gotong-royong?",
+                        options: [
+                            "Memakai pakaian berjenama mahal dan aksesori emas yang banyak.",
+                            "Memakai pakaian sukan yang selesa, kemas dan bersesuaian dengan aktiviti.",
+                            "Memakai pakaian rasmi sekolah yang lengkap bertali leher.",
+                            "Memakai pakaian yang koyak-rabak sengaja."
+                        ],
+                        correct: 1,
+                        rationale: "Pakaian yang kemas dan selesa adalah lambang kesederhanaan serta praktikal untuk aktiviti fizikal.",
+                        tag: "Penampilan Diri"
+                    },
+                    {
+                        question: "Apabila membahagikan tugas membersihkan taman bersama jiran sebaya, prinsip apakah yang perlu dipegang?",
+                        options: [
+                            "Memilih tugas yang paling mudah dan menyuruh orang lain buat susah.",
+                            "Bertolak ansur dan membahagikan tugas secara adil serta saksama.",
+                            "Menolak sebarang tugas yang diberikan.",
+                            "Membuat semua kerja sendirian tanpa mempedulikan orang lain."
+                        ],
+                        correct: 1,
+                        rationale: "Bertolak ansur dan adil dalam tugasan mencerminkan nilai murni dan kesederhanaan dalam pergaulan.",
+                        tag: "Kerjasama"
+                    }
+                ]
+            },
+            {
+                level: 3,
+                title: "Tahap 3: Hari Lahir yang Sederhana",
+                icon: "🎂",
+                story: "Tiba hari jadi rakan baik kamu, Siti. Dia ingin mengadakan sambutan hari jadi secara sederhana di rumahnya dan menjemput kamu. Jom jawab soalan untuk memahami erti kesyukuran dan kemesraan ini.",
+                badge: { name: "Badge Sahabat Sejati", icon: "🎁" },
+                questions: [
+                    {
+                        question: "Siti menyediakan kek buatan sendiri yang ringkas untuk majlisnya. Apakah perasaan yang sepatutnya ada pada diri kamu?",
+                        options: [
+                            "Kecewa kerana tiada kek bertingkat yang dibeli dari hotel mahal.",
+                            "Gembira dan menghargai usaha Siti menyediakan kek tersebut.",
+                            "Marah kerana tidak dihidangkan makanan luar yang mahal.",
+                            "Abaikan majlis tersebut."
+                        ],
+                        correct: 1,
+                        rationale: "Menghargai usaha rakan memupuk hubungan mesra yang tulus tanpa dipengaruhi oleh nilai material.",
+                        tag: "Penghargaan"
+                    },
+                    {
+                        question: "Apakah hadiah yang paling sesuai diberikan kepada Siti yang menyambut hari jadi secara sederhana?",
+                        options: [
+                            "Hadiah yang mahal harganya untuk mempamerkan kekayaan.",
+                            "Kad ucapan buatan tangan yang ikhlas dan bermakna.",
+                            "Meminta orang lain belikan hadiah yang besar untuk kamu.",
+                            "Tidak perlu hadir dan tidak perlu beri apa-apa."
+                        ],
+                        correct: 1,
+                        rationale: "Hadiah yang ikhlas dan bersesuaian dengan kemampuan diri lebih bernilai dalam menjalinkan kemesraan.",
+                        tag: "Pemberian Ikhlas"
+                    },
+                    {
+                        question: "Semasa meraikan majlis tersebut bersama rakan-rakan lain, apakah amalan kesederhanaan pertuturan yang perlu dijaga?",
+                        options: [
+                            "Berbual dengan nada suara yang lembut, mesra dan tidak menyombong diri.",
+                            "Berckap besar mengenai kekayaan keluarga sendiri.",
+                            "Mentertawakan cara tetamu lain berpakaian.",
+                            "Diam sepanjang masa tanpa berkata apa-apa."
+                        ],
+                        correct: 0,
+                        rationale: "Pertuturan yang berhemah dan mesra mencerminkan peribadi mulia dalam pergaulan harian.",
+                        tag: "Adab Komunikasi"
+                    }
+                ]
+            },
+            {
+                level: 4,
+                title: "Tahap 4: Kemuncak Kemesraan Jiran Tetangga",
+                icon: "🌟",
+                story: "Ini adalah cabaran terakhir! Taman perumahan kamu dinobatkan sebagai taman contoh perpaduan kerana amalan hidup bersederhana dan mesra. Buktikan kefahaman terakhir kamu untuk menjadi wira terulung!",
+                badge: { name: "Badge Wira Perpaduan", icon: "🏆" },
+                questions: [
+                    {
+                        question: "Apakah kebaikan utama mengamalkan sikap sederhana dalam menjalinkan hubungan kemesraan dengan masyarakat?",
+                        options: [
+                            "Mewujudkan perpaduan yang kukuh, harmoni dan tiada jurang perbezaan status.",
+                            "Membolehkan kita menunjuk-nunjuk kehebatan diri kepada orang lain.",
+                            "Membuatkan jiran takut kepada kita.",
+                            "Menjadikan kawasan perumahan sunyi dan sepi."
+                        ],
+                        correct: 0,
+                        rationale: "Kesederhanaan merapatkan jurang dan melahirkan masyarakat yang harmoni serta saling mengasihi.",
+                        tag: "Kesan Positif"
+                    },
+                    {
+                        question: "Bagaimanakah cara kita menyantuni jiran yang kurang bernasib baik dengan cara yang bersesuaian?",
+                        options: [
+                            "Memberikan bantuan keperluan asas secara senyap-senyap dan penuh ikhlas tanpa riak.",
+                            "Memberikan bantuan sambil merakam video untuk dimuat naik ke media sosial.",
+                            "Meminta jiran tersebut memulangkan semula bantuan dengan faedah.",
+                            "Membiarkan mereka kerana itu bukan urusan kita."
+                        ],
+                        correct: 0,
+                        rationale: "Bantuan yang diberikan secara ikhlas dan sederhana mengeratkan lagi silaturahim tanpa memalukan penerima.",
+                        tag: "Bantuan Masyarakat"
+                    },
+                    {
+                        question: "Manakah antara berikut amalan hidup bersederhana yang paling tepat dalam pergaulan harian?",
+                        options: [
+                            "Hidup berfoya-foya selagi ada wang.",
+                            "Bersikap merendah diri, tidak membazir dan sentiasa mesra dengan semua orang.",
+                            "Menjauhi jiran kerana takut terpaksa berbelanja lebih.",
+                            "Hanya berkawan dengan orang yang kaya sahaja."
+                        ],
+                        correct: 1,
+                        rationale: "Merendah diri dan mesra dengan semua lapisan masyarakat adalah teras kesederhanaan menjalin kemesraan.",
+                        tag: "Kesimpulan Nilai"
+                    }
+                ]
+            }
+        ];
+
+        let currentLevel = 0;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let lives = 3;
+
+        const screens = {
+            welcome: document.getElementById('screen-welcome'),
+            story: document.getElementById('screen-story'),
+            quiz: document.getElementById('screen-quiz'),
+            reward: document.getElementById('screen-reward'),
+            gameover: document.getElementById('screen-gameover'),
+            victory: document.getElementById('screen-victory')
+        };
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+            
+            const statusBar = document.getElementById('status-bar');
+            if (['story', 'quiz', 'reward'].includes(screenName)) {
+                statusBar.classList.remove('hidden');
+            } else {
+                statusBar.classList.add('hidden');
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('lives-display').innerText = lives;
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('level-display').innerText = currentLevel + 1;
+        }
+
+        function startGame() {
+            currentLevel = 0;
+            score = 0;
+            lives = 3;
+            updateUI();
+            loadStory();
+        }
+
+        function loadStory() {
+            const levelData = gameData[currentLevel];
+            document.getElementById('story-icon').innerText = levelData.icon;
+            document.getElementById('story-title').innerText = levelData.title;
+            document.getElementById('story-text').innerText = levelData.story;
+            showScreen('story');
+        }
+
+        function startLevelQuestions() {
+            currentQuestionIndex = 0;
+            loadQuestion();
+            showScreen('quiz');
+        }
+
+        function loadQuestion() {
+            const levelData = gameData[currentLevel];
+            const q = levelData.questions[currentQuestionIndex];
+
+            document.getElementById('question-progress').innerText = `Soalan ${currentQuestionIndex + 1} dari 3`;
+            document.getElementById('question-tag').innerText = q.tag;
+            document.getElementById('question-text').innerText = q.question;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-2xl border-2 border-indigo-200 hover:bg-indigo-50 font-medium text-gray-700 transition flex items-center justify-between";
+                btn.innerHTML = `<span>${opt}</span> <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500 font-bold">${String.fromCharCode(65 + idx)}</span>`;
+                btn.onclick = () => selectAnswer(idx);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('feedback-container').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function selectAnswer(selectedIdx) {
+            const levelData = gameData[currentLevel];
+            const q = levelData.questions[currentQuestionIndex];
+            const options = document.getElementById('options-container').children;
+
+            // Disable all option buttons after selection
+            Array.from(options).forEach(btn => btn.onclick = null);
+
+            const feedback = document.getElementById('feedback-container');
+            feedback.classList.remove('hidden');
+
+            if (selectedIdx === q.correct) {
+                options[selectedIdx].className = "w-full text-left p-4 rounded-2xl border-2 border-green-500 bg-green-50 font-medium text-green-800 flex items-center justify-between";
+                feedback.className = "p-4 rounded-2xl text-center font-bold text-lg bg-green-100 text-green-800";
+                feedback.innerHTML = `✅ Betul! ${q.rationale}`;
+                score += 10;
+            } else {
+                options[selectedIdx].className = "w-full text-left p-4 rounded-2xl border-2 border-red-500 bg-red-50 font-medium text-red-800 flex items-center justify-between";
+                options[q.correct].className = "w-full text-left p-4 rounded-2xl border-2 border-green-500 bg-green-50 font-medium text-green-800 flex items-center justify-between";
+                feedback.className = "p-4 rounded-2xl text-center font-bold text-lg bg-red-100 text-red-800";
+                feedback.innerHTML = `❌ Kurang Tepat. ${q.rationale}`;
+                lives--;
+            }
+
+            updateUI();
+
+            if (lives <= 0) {
+                setTimeout(() => showScreen('gameover'), 2000);
+                return;
+            }
+
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            const levelData = gameData[currentLevel];
+
+            if (currentQuestionIndex < levelData.questions.length) {
+                loadQuestion();
+            } else {
+                // Level completed, show reward screen
+                document.getElementById('badge-icon').innerText = levelData.badge.icon;
+                document.getElementById('badge-name').innerText = levelData.badge.name;
+                showScreen('reward');
+            }
+        }
+
+        function proceedNextLevel() {
+            currentLevel++;
+            if (currentLevel < gameData.length) {
+                loadStory();
+            } else {
+                document.getElementById('final-score').innerText = score;
+                showScreen('victory');
+            }
+        }
+
+        function resetGame() {
+            showScreen('welcome');
+        }
+    </script>
+</body>
+</html>
+```eof
+
+### Ringkasan Permainan:
+* **Tema:** Kesederhanaan Menjalin Kemesraan (Pendidikan Moral Tahun 4).
+* **Struktur:** 4 Tahap pengembaraan yang menarik dengan jalan cerita berkaitan kehidupan harian (Persiapan rumah terbuka, gotong-royong, hari jadi sederhana, dan perpaduan jiran).
+* **Soalan:** 3 soalan bagi setiap tahap (jumlah 12 soalan objektif bermutu tinggi dengan penjelasan lengkap).
+* **Sistem Ganjaran & Nyawa:** Mengandungi sistem 3 nyawa ❤️, sistem pemarkahan (10 markah setiap soalan betul), dan penerimaan *Badge* unik di setiap akhir tahap.
+
+Selamat mencuba dan semoga berjaya dalam pengembaraan ini!
